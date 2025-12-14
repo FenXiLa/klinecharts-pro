@@ -9,7 +9,22 @@ export default defineConfig({
     cssTarget: 'chrome61',
     sourcemap: true,
     rollupOptions: {
-      external: ['klinecharts'],
+      external: [
+        'klinecharts',
+        // CCXT 相关的 Node.js 模块（浏览器环境不支持）
+        'ccxt',
+        'node:http',
+        'node:https',
+        'node:url',
+        'node:crypto',
+        'node:stream',
+        'node:util',
+        'node:buffer',
+        'node:events',
+        'http-proxy-agent',
+        'https-proxy-agent',
+        'ws'
+      ],
       output: {
         assetFileNames: (chunkInfo) => {
           if (chunkInfo.name === 'style.css') {
@@ -17,7 +32,8 @@ export default defineConfig({
           }
         },
         globals: {
-          klinecharts: 'klinecharts'
+          klinecharts: 'klinecharts',
+          ccxt: 'ccxt'
         },
       },
     },

@@ -28,9 +28,12 @@
   "license": "Apache-2.0",
   "private": false,
   "scripts": {
-    "build-core": "tsc && vite build",
-    "build-dts": "dts-bundle-generator --no-banner true --umd-module-name klinechartspro -o dist/index.d.ts src/index.ts",
+    "build-core": "npx tsc && vite build",
+    "build-dts": "dts-bundle-generator --no-banner true --umd-module-name klinechartspro --export-referenced-types false --respect-preserve-const-enum --project tsconfig.dts.json -o dist/index.d.ts src/index.ts",
     "build": "npm run build-core && npm run build-dts",
+    "test:ccxt": "npx tsx test-ccxt-datafeeds.ts",
+    "test:simple": "npx tsx test-simple.js",
+    "test:proxy": "bash test-proxy.sh",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
@@ -59,10 +62,9 @@
     "vitest": "^0.28.4"
   },
   "dependencies": {
+    "ccxt": "^4.2.25",
     "lodash": "^4.17.21",
-    "solid-js": "^1.6.11"
-  },
-  "peerDependencies": {
-    "klinecharts": ">=9.0.0"
+    "solid-js": "^1.6.11",
+    "klinecharts": "file:../KLineChart"
   }
 }

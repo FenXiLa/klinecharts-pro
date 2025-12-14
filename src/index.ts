@@ -17,6 +17,8 @@ import { registerOverlay } from 'klinecharts'
 import overlays from './extension'
 
 import DefaultDatafeed from './DefaultDatafeed'
+import OKXDataFeeds from './OKXDataFeeds'
+import CCXTDataFeeds from './CCXTDataFeeds'
 import KLineChartPro from './KLineChartPro'
 
 import { load } from './i18n'
@@ -29,6 +31,8 @@ overlays.forEach(o => { registerOverlay(o) })
 
 export {
   DefaultDatafeed,
+  OKXDataFeeds,
+  CCXTDataFeeds,
   KLineChartPro,
   load as loadLocales
 }

@@ -20,7 +20,7 @@ const fibonacciSegment: OverlayTemplate = {
   needDefaultPointFigure: true,
   needDefaultXAxisFigure: true,
   needDefaultYAxisFigure: true,
-  createPointFigures: ({ coordinates, overlay, precision }) => {
+  createPointFigures: ({ coordinates, overlay, chart }) => {
     const lines: LineAttrs[] = []
     const texts: TextAttrs[] = []
     if (coordinates.length > 1) {
@@ -30,10 +30,11 @@ const fibonacciSegment: OverlayTemplate = {
       const points = overlay.points
       // @ts-expect-error
       const valueDif = points[0].value - points[1].value
+      const pricePrecision = chart.getSymbol()?.pricePrecision ?? 2
       percents.forEach(percent => {
         const y = coordinates[1].y + yDif * percent
         // @ts-expect-error
-        const price = (points[1].value + valueDif * percent).toFixed(precision.price)
+        const price = (points[1].value + valueDif * percent).toFixed(pricePrecision)
         lines.push({ coordinates: [{ x: coordinates[0].x, y }, { x: coordinates[1].x, y }] })
         texts.push({
           x: textX,
