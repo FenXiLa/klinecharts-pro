@@ -48,15 +48,24 @@ function createIndicator (widget: Nullable<Chart>, indicatorName: string, isStac
     name: indicatorName,
     // @ts-expect-error - using old API format for compatibility
     createTooltipDataSource: ({ indicator, defaultStyles }: any) => {
+      // 安全检查：确保 defaultStyles 和 tooltip 存在
+      if (!defaultStyles || !defaultStyles.tooltip || !defaultStyles.tooltip.features) {
+        // 如果 defaultStyles 未准备好，返回空 features
+        return { features: [] }
+      }
+      
       const features = []
+      const tooltipFeatures = defaultStyles.tooltip.features
+      
       if (indicator.visible) {
-        features.push(defaultStyles.tooltip.features[1])
-        features.push(defaultStyles.tooltip.features[2])
-        features.push(defaultStyles.tooltip.features[3])
+        // 安全地访问数组元素
+        if (tooltipFeatures[1]) features.push(tooltipFeatures[1])
+        if (tooltipFeatures[2]) features.push(tooltipFeatures[2])
+        if (tooltipFeatures[3]) features.push(tooltipFeatures[3])
       } else {
-        features.push(defaultStyles.tooltip.features[0])
-        features.push(defaultStyles.tooltip.features[2])
-        features.push(defaultStyles.tooltip.features[3])
+        if (tooltipFeatures[0]) features.push(tooltipFeatures[0])
+        if (tooltipFeatures[2]) features.push(tooltipFeatures[2])
+        if (tooltipFeatures[3]) features.push(tooltipFeatures[3])
       }
       return { features }
     }
@@ -77,6 +86,18 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
 
   const [symbol, setSymbol] = createSignal(props.symbol)
   const [period, setPeriod] = createSignal(props.period)
+  
+  // 包装 setPeriod 以添加调试信息
+  const setPeriodWithLog = (newPeriod: Period) => {
+    const oldPeriod = period()
+    console.log('[ChartPro] setPeriod 被调用:', {
+      oldPeriod,
+      newPeriod,
+      isEqual: oldPeriod.text === newPeriod.text
+    })
+    setPeriod(newPeriod)
+    console.log('[ChartPro] setPeriod 执行后，当前 period:', period())
+  }
   const [indicatorModalVisible, setIndicatorModalVisible] = createSignal(false)
   const [mainIndicators, setMainIndicators] = createSignal([...(props.mainIndicators!)])
   const [subIndicators, setSubIndicators] = createSignal({})
@@ -110,7 +131,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
     getTimezone: () => timezone().key,
     setSymbol,
     getSymbol: () => symbol(),
-    setPeriod,
+    setPeriod: setPeriodWithLog,
     getPeriod: () => period()
   })
 
@@ -251,6 +272,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
         getBars: async (params: any) => {
           const { type, timestamp, symbol: s, period: p, callback } = params
           console.log('[DataLoader] getBars called:', { type, timestamp, symbol: s?.ticker, period: p })
+          console.log('[DataLoader] 设置 loading = true')
           loading = true
           try {
             if (type === 'init' || type === 'forward') {
@@ -276,6 +298,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
             console.error('[DataLoader] Error loading data:', error)
             callback([], false)
           } finally {
+            console.log('[DataLoader] 设置 loading = false')
             loading = false
           }
         },
@@ -364,26 +387,54 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
   })
 
   createEffect((prev?: PrevSymbolPeriod) => {
+    const s = symbol()
+    const p = period()
+    
+    console.log('[ChartPro] createEffect 触发:', { 
+      loading, 
+      hasWidget: !!widget, 
+      currentSymbol: s, 
+      currentPeriod: p,
+      prevSymbol: prev?.symbol,
+      prevPeriod: prev?.period
+    })
+    
     if (!loading && widget) {
       if (prev) {
+        console.log('[ChartPro] 取消订阅之前的周期:', prev.symbol, prev.period)
         props.datafeed.unsubscribe(prev.symbol, prev.period)
       }
-      const s = symbol()
-      const p = period()
       
       // Update symbol and period to trigger data loading via DataLoader
       if (s) {
-        console.log('[ChartPro] Symbol changed:', s)
-        widget.setSymbol(s as any)
+        const symbolChanged = !prev || prev.symbol.ticker !== s.ticker
+        if (symbolChanged) {
+          console.log('[ChartPro] Symbol 变化，更新:', s)
+          widget.setSymbol(s as any)
+        } else {
+          console.log('[ChartPro] Symbol 未变化，跳过更新')
+        }
       }
       if (p) {
-        console.log('[ChartPro] Period changed:', p)
-        widget.setPeriod(p as any)
+        const periodChanged = !prev || prev.period.text !== p.text
+        if (periodChanged) {
+          console.log('[ChartPro] Period 变化，更新:', p, '之前:', prev?.period)
+          widget.setPeriod(p as any)
+        } else {
+          console.log('[ChartPro] Period 未变化，跳过更新')
+        }
       }
       
       loading = false
       setLoadingVisible(false)
+      console.log('[ChartPro] createEffect 完成，返回新的 symbol 和 period')
       return { symbol: s, period: p }
+    } else {
+      console.log('[ChartPro] createEffect 跳过执行:', { 
+        loading, 
+        hasWidget: !!widget,
+        reason: loading ? 'loading=true' : 'widget不存在'
+      })
     }
     return prev
   })
@@ -599,7 +650,7 @@ const ChartProComponent: Component<ChartProComponentProps> = props => {
           } catch (e) {}    
         }}
         onSymbolClick={() => { setSymbolSearchModalVisible(!symbolSearchModalVisible()) }}
-        onPeriodChange={setPeriod}
+        onPeriodChange={setPeriodWithLog}
         onIndicatorClick={() => { setIndicatorModalVisible((visible => !visible)) }}
         onTimezoneClick={() => { setTimezoneModalVisible((visible => !visible)) }}
         onSettingClick={() => { setSettingModalVisible((visible => !visible)) }}

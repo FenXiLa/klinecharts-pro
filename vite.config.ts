@@ -10,20 +10,7 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       external: [
-        'klinecharts',
-        // CCXT 相关的 Node.js 模块（浏览器环境不支持）
-        'ccxt',
-        'node:http',
-        'node:https',
-        'node:url',
-        'node:crypto',
-        'node:stream',
-        'node:util',
-        'node:buffer',
-        'node:events',
-        'http-proxy-agent',
-        'https-proxy-agent',
-        'ws'
+        'klinecharts'
       ],
       output: {
         assetFileNames: (chunkInfo) => {
@@ -32,8 +19,7 @@ export default defineConfig({
           }
         },
         globals: {
-          klinecharts: 'klinecharts',
-          ccxt: 'ccxt'
+          klinecharts: 'klinecharts'
         },
       },
     },

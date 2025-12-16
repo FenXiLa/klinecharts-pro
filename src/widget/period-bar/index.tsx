@@ -82,7 +82,11 @@ const PeriodBar: Component<PeriodBarProps> = props => {
         props.periods.map(p => (
           <span
             class={`item period ${p.text === props.period.text ? 'selected' : ''}`}
-            onClick={() => { props.onPeriodChange(p) }}>
+            onClick={() => { 
+              console.log('[PeriodBar] 点击周期:', p, '当前周期:', props.period)
+              props.onPeriodChange(p)
+              console.log('[PeriodBar] onPeriodChange 已调用')
+            }}>
             {p.text}
           </span>
         ))

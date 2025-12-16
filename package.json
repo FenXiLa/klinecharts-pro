@@ -30,14 +30,12 @@
   "scripts": {
     "build-core": "npx tsc && vite build",
     "build-dts": "dts-bundle-generator --no-banner true --umd-module-name klinechartspro --export-referenced-types false --respect-preserve-const-enum --project tsconfig.dts.json -o dist/index.d.ts src/index.ts",
-    "build": "npm run build-core && npm run build-dts",
-    "test:ccxt": "npx tsx test-ccxt-datafeeds.ts",
-    "test:simple": "npx tsx test-simple.js",
+    "build": "pnpm run build-core && pnpm run build-dts",
     "test:proxy": "bash test-proxy.sh",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "docs:deploy": "npm run docs:build && gh-pages -d website"
+    "docs:deploy": "pnpm run docs:build && gh-pages -d website"
   },
   "devDependencies": {
     "@solidjs/testing-library": "^0.6.0",
@@ -62,7 +60,6 @@
     "vitest": "^0.28.4"
   },
   "dependencies": {
-    "ccxt": "^4.2.25",
     "lodash": "^4.17.21",
     "solid-js": "^1.6.11",
     "klinecharts": "file:../KLineChart"
